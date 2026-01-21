@@ -30,12 +30,13 @@ public class TaskController {
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
+    public Task createTask(@jakarta.validation.Valid @RequestBody Task task) {
         return taskService.createTask(task);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id,
+            @jakarta.validation.Valid @RequestBody Task taskDetails) {
         try {
             Task updatedTask = taskService.updateTask(id, taskDetails);
             return ResponseEntity.ok(updatedTask);
