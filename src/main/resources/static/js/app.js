@@ -1,0 +1,193 @@
+const API_URL = '/api/tasks';
+let tasks = [];
+let currentFilter = 'ALL';
+
+// DOM Elements
+const taskList = document.getElementById('taskList');
+const addTaskBtn = document.getElementById('addTaskBtn');
+const taskTitleInput = document.getElementById('taskTitle');
+const titleError = document.getElementById('titleError');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const modal = document.getElementById('taskModal');
+const closeModal = document.querySelector('.close-modal');
+const saveTaskBtn = document.getElementById('saveTaskBtn');
+
+// Modal inputs
+const editTaskId = document.getElementById('editTaskId');
+const editTaskTitle = document.getElementById('editTaskTitle');
+const editTaskDesc = document.getElementById('editTaskDesc');
+const editTaskStatus = document.getElementById('editTaskStatus');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', fetchTasks);
+
+// Event Listeners
+addTaskBtn.addEventListener('click', createTask);
+taskTitleInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') createTask();
+});
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderTasks();
+    });
+});
+
+closeModal.onclick = () => modal.classList.remove('show');
+window.onclick = (e) => {
+    if (e.target == modal) modal.classList.remove('show');
+}
+saveTaskBtn.onclick = updateTask;
+
+// API Functions
+async function fetchTasks() {
+    try {
+        const response = await fetch(API_URL);
+        tasks = await response.json();
+        renderTasks();
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        taskList.innerHTML = '<div class="error-message">Ошибка загрузки задач</div>';
+    }
+}
+
+async function createTask() {
+    const title = taskTitleInput.value.trim();
+    if (!title) {
+        showError(titleError, 'Введите название задачи');
+        return;
+    }
+    showError(titleError, '');
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, description: '', status: 'PENDING' })
+        });
+
+        if (response.ok) {
+            taskTitleInput.value = '';
+            fetchTasks();
+        } else {
+            const err = await response.json();
+            showError(titleError, err.title || 'Ошибка создания');
+        }
+    } catch (error) {
+        console.error('Error creating task:', error);
+    }
+}
+
+async function deleteTask(id, event) {
+    event.stopPropagation();
+    if (!confirm('Удалить эту задачу?')) return;
+
+    try {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        fetchTasks();
+    } catch (error) {
+        console.error('Error deleting task:', error);
+    }
+}
+
+async function updateTask() {
+    const id = editTaskId.value;
+    const taskData = {
+        title: editTaskTitle.value,
+        description: editTaskDesc.value,
+        status: editTaskStatus.value
+    };
+
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
+        });
+
+        if (response.ok) {
+            modal.classList.remove('show');
+            fetchTasks();
+        } else {
+            alert('Ошибка обновления');
+        }
+    } catch (error) {
+        console.error('Error updating task:', error);
+    }
+}
+
+// UI Functions
+function renderTasks() {
+    taskList.innerHTML = '';
+
+    // Sort: PENDING first, then IN_PROGRESS, then COMPLETED. Within status by id desc
+    const sortedTasks = [...tasks].sort((a, b) => b.id - a.id);
+
+    const filteredTasks = sortedTasks.filter(task => {
+        if (currentFilter === 'ALL') return true;
+        return task.status === currentFilter;
+    });
+
+    if (filteredTasks.length === 0) {
+        taskList.innerHTML = '<div style="text-align:center; padding: 2rem; color: #9ca3af;">Задач пока нет</div>';
+        return;
+    }
+
+    filteredTasks.forEach(task => {
+        const date = new Date(task.createdAt).toLocaleDateString();
+        const card = document.createElement('div');
+        card.className = `task-card status-${task.status}`;
+        card.onclick = () => openModal(task);
+
+        card.innerHTML = `
+            <div class="task-content">
+                <h3>${escapeHtml(task.title)}</h3>
+                <div class="task-meta">
+                    <span class="status-badge">${getStatusLabel(task.status)}</span>
+                    <span class="task-date"><i class="far fa-calendar"></i> ${date}</span>
+                </div>
+            </div>
+            <div class="task-actions">
+                <button class="action-btn delete-btn" onclick="deleteTask(${task.id}, event)">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        taskList.appendChild(card);
+    });
+}
+
+function openModal(task) {
+    editTaskId.value = task.id;
+    editTaskTitle.value = task.title;
+    editTaskDesc.value = task.description || '';
+    editTaskStatus.value = task.status;
+
+    modal.classList.add('show');
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'PENDING': 'Ожидает',
+        'IN_PROGRESS': 'В работе',
+        'COMPLETED': 'Готово'
+    };
+    return labels[status] || status;
+}
+
+function showError(element, message) {
+    element.textContent = message;
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
