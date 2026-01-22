@@ -28,6 +28,9 @@ public class Task {
 
     private java.time.LocalDate dueDate;
 
+    @Column(name = "order_index")
+    private Integer orderIndex = 0;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

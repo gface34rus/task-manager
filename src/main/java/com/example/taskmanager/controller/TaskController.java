@@ -50,4 +50,10 @@ public class TaskController {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/reorder")
+    public ResponseEntity<Void> reorderTasks(@RequestBody List<Long> taskIds) {
+        taskService.updateTaskOrder(taskIds);
+        return ResponseEntity.ok().build();
+    }
 }

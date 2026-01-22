@@ -141,8 +141,14 @@ async function updateTask() {
 function renderTasks() {
     taskList.innerHTML = '';
 
-    // Sort: PENDING first, then IN_PROGRESS, then COMPLETED. Within status by id desc
-    const sortedTasks = [...tasks].sort((a, b) => b.id - a.id);
+    // Sort: PENDING first, then IN_PROGRESS, then COMPLETED. Within status by orderIndex
+    let sortedTasks = [...tasks].sort((a, b) => {
+        // First sort by orderIndex if exists (priority)
+        if (a.orderIndex !== null && b.orderIndex !== null) {
+            return a.orderIndex - b.orderIndex;
+        }
+        return b.id - a.id;
+    });
 
     const filteredTasks = sortedTasks.filter(task => {
         // Filter by Status
@@ -176,7 +182,12 @@ function renderTasks() {
 
         const card = document.createElement('div');
         card.className = `task-card status-${task.status}`;
-        card.onclick = () => openModal(task);
+        card.setAttribute('draggable', 'true'); // Make draggable
+        card.dataset.id = task.id; // Store ID
+
+        card.onclick = (e) => {
+            if (!e.target.closest('.delete-btn')) openModal(task);
+        };
 
         card.innerHTML = `
             <div class="task-content">
@@ -192,8 +203,60 @@ function renderTasks() {
                 </button>
             </div>
         `;
+
+        // Drag Events
+        card.addEventListener('dragstart', () => {
+            card.classList.add('dragging');
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            saveOrder();
+        });
+
         taskList.appendChild(card);
     });
+
+    // Container Drag Events
+    taskList.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(taskList, e.clientY);
+        const draggable = document.querySelector('.dragging');
+        if (afterElement == null) {
+            taskList.appendChild(draggable);
+        } else {
+            taskList.insertBefore(draggable, afterElement);
+        }
+    });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+async function saveOrder() {
+    const taskCards = [...taskList.querySelectorAll('.task-card')];
+    const taskIds = taskCards.map(card => parseInt(card.dataset.id));
+
+    try {
+        await fetch(`${API_URL}/reorder`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskIds)
+        });
+    } catch (error) {
+        console.error('Error saving order:', error);
+    }
 }
 
 function openModal(task) {
