@@ -1,13 +1,16 @@
 const API_URL = '/api/tasks';
 let tasks = [];
 let currentFilter = 'ALL';
+let searchTerm = ''; // Search state
 
 // DOM Elements
 const taskList = document.getElementById('taskList');
 const addTaskBtn = document.getElementById('addTaskBtn');
 const taskTitleInput = document.getElementById('taskTitle');
+const taskDueDateInput = document.getElementById('taskDueDate'); // New input
 const titleError = document.getElementById('titleError');
 const filterBtns = document.querySelectorAll('.filter-btn');
+const searchInput = document.getElementById('searchInput'); // New input
 const modal = document.getElementById('taskModal');
 const closeModal = document.querySelector('.close-modal');
 const saveTaskBtn = document.getElementById('saveTaskBtn');
@@ -16,6 +19,7 @@ const saveTaskBtn = document.getElementById('saveTaskBtn');
 const editTaskId = document.getElementById('editTaskId');
 const editTaskTitle = document.getElementById('editTaskTitle');
 const editTaskDesc = document.getElementById('editTaskDesc');
+const editTaskDueDate = document.getElementById('editTaskDueDate'); // New input
 const editTaskStatus = document.getElementById('editTaskStatus');
 
 // Initialize
@@ -25,6 +29,12 @@ document.addEventListener('DOMContentLoaded', fetchTasks);
 addTaskBtn.addEventListener('click', createTask);
 taskTitleInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') createTask();
+});
+
+// Search Listener
+searchInput.addEventListener('input', (e) => {
+    searchTerm = e.target.value.toLowerCase();
+    renderTasks();
 });
 
 filterBtns.forEach(btn => {
@@ -56,6 +66,7 @@ async function fetchTasks() {
 
 async function createTask() {
     const title = taskTitleInput.value.trim();
+    const dueDate = taskDueDateInput.value; // Get date
     if (!title) {
         showError(titleError, 'Введите название задачи');
         return;
@@ -66,11 +77,17 @@ async function createTask() {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title, description: '', status: 'PENDING' })
+            body: JSON.stringify({
+                title: title,
+                description: '',
+                status: 'PENDING',
+                dueDate: dueDate || null // Send date
+            })
         });
 
         if (response.ok) {
             taskTitleInput.value = '';
+            taskDueDateInput.value = ''; // Clear date
             fetchTasks();
         } else {
             const err = await response.json();
@@ -98,7 +115,8 @@ async function updateTask() {
     const taskData = {
         title: editTaskTitle.value,
         description: editTaskDesc.value,
-        status: editTaskStatus.value
+        status: editTaskStatus.value,
+        dueDate: editTaskDueDate.value || null
     };
 
     try {
@@ -127,17 +145,35 @@ function renderTasks() {
     const sortedTasks = [...tasks].sort((a, b) => b.id - a.id);
 
     const filteredTasks = sortedTasks.filter(task => {
-        if (currentFilter === 'ALL') return true;
-        return task.status === currentFilter;
+        // Filter by Status
+        if (currentFilter !== 'ALL' && task.status !== currentFilter) return false;
+
+        // Filter by Search Term
+        if (searchTerm && !task.title.toLowerCase().includes(searchTerm)) return false;
+
+        return true;
     });
 
     if (filteredTasks.length === 0) {
-        taskList.innerHTML = '<div style="text-align:center; padding: 2rem; color: #9ca3af;">Задач пока нет</div>';
+        taskList.innerHTML = '<div style="text-align:center; padding: 2rem; color: #9ca3af;">Ничего не найдено</div>';
         return;
     }
 
     filteredTasks.forEach(task => {
-        const date = new Date(task.createdAt).toLocaleDateString();
+        const createdDate = new Date(task.createdAt).toLocaleDateString();
+
+        // Due Date Logic
+        let dueDateHtml = '';
+        if (task.dueDate) {
+            const due = new Date(task.dueDate);
+            const isOverdue = due < new Date().setHours(0, 0, 0, 0) && task.status !== 'COMPLETED';
+            dueDateHtml = `
+                <span class="due-date ${isOverdue ? 'overdue' : ''}">
+                    <i class="fa-regular fa-clock"></i> ${due.toLocaleDateString()}
+                </span>
+            `;
+        }
+
         const card = document.createElement('div');
         card.className = `task-card status-${task.status}`;
         card.onclick = () => openModal(task);
@@ -147,7 +183,7 @@ function renderTasks() {
                 <h3>${escapeHtml(task.title)}</h3>
                 <div class="task-meta">
                     <span class="status-badge">${getStatusLabel(task.status)}</span>
-                    <span class="task-date"><i class="far fa-calendar"></i> ${date}</span>
+                    ${dueDateHtml}
                 </div>
             </div>
             <div class="task-actions">
@@ -165,6 +201,7 @@ function openModal(task) {
     editTaskTitle.value = task.title;
     editTaskDesc.value = task.description || '';
     editTaskStatus.value = task.status;
+    editTaskDueDate.value = task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''; // Fill date
 
     modal.classList.add('show');
 }

@@ -37,6 +37,7 @@ public class TaskService {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
             task.setDescription(taskDetails.getDescription());
+            task.setDueDate(taskDetails.getDueDate());
             if (taskDetails.getStatus() != null) {
                 task.setStatus(taskDetails.getStatus());
             }

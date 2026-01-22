@@ -130,6 +130,73 @@ header p {
     min-height: 20px;
 }
 
+/* Date Input */
+.date-input {
+    flex: 0 0 150px;
+    /* Fixed width for date input */
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    width: 100%;
+    max-width: 250px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    background-color: var(--input-bg);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+.tasks-filters-bar {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+/* Task Meta Fixes */
+.task-meta {
+    flex-wrap: wrap;
+}
+
+.due-date {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.due-date.overdue {
+    color: var(--danger-color);
+    background: var(--danger-bg);
+}
+
 /* Filter Section */
 .tasks-header {
     display: flex;
