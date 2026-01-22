@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -20,6 +22,7 @@
         <section class="add-task-section">
             <div class="input-group">
                 <input type="text" id="taskTitle" placeholder="Что нужно сделать?" autocomplete="off">
+                <input type="date" id="taskDueDate" class="date-input" title="Срок выполнения">
                 <button id="addTaskBtn"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="error-message" id="titleError"></div>
@@ -28,6 +31,12 @@
         <section class="tasks-container">
             <div class="tasks-header">
                 <h2>Список задач</h2>
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск...">
+                </div>
+            </div>
+            <div class="tasks-filters-bar">
                 <div class="filters">
                     <button class="filter-btn active" data-filter="ALL">Все</button>
                     <button class="filter-btn" data-filter="PENDING">Ожидают</button>
@@ -35,7 +44,7 @@
                     <button class="filter-btn" data-filter="COMPLETED">Готово</button>
                 </div>
             </div>
-            
+
             <div id="taskList" class="task-list">
                 <!-- Tasks will be injected here via JS -->
                 <div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка...</div>
@@ -58,6 +67,10 @@
                 <textarea id="editTaskDesc" rows="4"></textarea>
             </div>
             <div class="form-group">
+                <label>Срок выполнения</label>
+                <input type="date" id="editTaskDueDate">
+            </div>
+            <div class="form-group">
                 <label>Статус</label>
                 <select id="editTaskStatus">
                     <option value="PENDING">Ожидает</option>
@@ -71,4 +84,5 @@
 
     <script src="js/app.js"></script>
 </body>
+
 </html>

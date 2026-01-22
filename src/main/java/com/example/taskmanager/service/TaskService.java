@@ -37,6 +37,7 @@ public class TaskService {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
             task.setDescription(taskDetails.getDescription());
+            task.setDueDate(taskDetails.getDueDate());
             if (taskDetails.getStatus() != null) {
                 task.setStatus(taskDetails.getStatus());
             }
@@ -46,5 +47,17 @@ public class TaskService {
 
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
+    }
+
+    public void updateTaskOrder(List<Long> taskIds) {
+        for (int i = 0; i < taskIds.size(); i++) {
+            Long taskId = taskIds.get(i);
+            Optional<Task> taskOpt = taskRepository.findById(taskId);
+            if (taskOpt.isPresent()) {
+                Task task = taskOpt.get();
+                task.setOrderIndex(i);
+                taskRepository.save(task);
+            }
+        }
     }
 }

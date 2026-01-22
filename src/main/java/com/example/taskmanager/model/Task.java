@@ -26,6 +26,11 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    private java.time.LocalDate dueDate;
+
+    @Column(name = "order_index")
+    private Integer orderIndex = 0;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
