@@ -38,11 +38,28 @@ public class AuthController {
         if (principal == null)
             return ResponseEntity.status(401).build();
 
+        String currentUsername = principal.getName();
+        boolean updated = false;
+
         String newPassword = payload.get("password");
         if (newPassword != null && !newPassword.isBlank()) {
-            userService.updateUserPassword(principal.getName(), newPassword);
-            return ResponseEntity.ok("Password updated");
+            userService.updateUserPassword(currentUsername, newPassword);
+            updated = true;
         }
-        return ResponseEntity.badRequest().body("Password required");
+
+        String newUsername = payload.get("username");
+        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(currentUsername)) {
+            try {
+                userService.updateUsername(currentUsername, newUsername);
+                // If username changed, we return specific message to trigger logout
+                return ResponseEntity.ok("Username updated");
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        if (updated)
+            return ResponseEntity.ok("Password updated");
+        return ResponseEntity.badRequest().body("Nothing to update");
     }
 }

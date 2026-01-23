@@ -45,6 +45,7 @@
             throw new Error('Not logged in');
         }).then(data => {
             document.getElementById('profile-username').textContent = data.username;
+            document.getElementById('usernameInput').value = data.username;
         }).catch(() => {
             window.location.href = '/login.html';
         });
@@ -53,10 +54,18 @@
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const password = document.getElementById('newPassword').value;
+            const username = document.getElementById('usernameInput').value;
             const msgDiv = document.getElementById('msg');
 
-            if (!password) {
-                msgDiv.textContent = 'Введите новый пароль для изменения';
+            const payload = {};
+            if (password) payload.password = password;
+            // Only send username if it changed
+            if (username && username !== document.getElementById('profile-username').textContent) {
+                payload.username = username;
+            }
+
+            if (Object.keys(payload).length === 0) {
+                msgDiv.textContent = 'Нет изменений для сохранения';
                 return;
             }
 
@@ -64,13 +73,26 @@
                 const response = await fetch('/auth/profile', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
+                    const text = await response.text();
                     msgDiv.style.color = 'var(--success-color)';
-                    msgDiv.textContent = 'Пароль успешно обновлен!';
-                    document.getElementById('newPassword').value = '';
+
+                    if (text === 'Username updated') {
+                        msgDiv.textContent = 'Имя обновлено! Перенаправление на выход...';
+                        setTimeout(() => window.location.href = '/logout', 2000);
+                    } else if (text === 'Password updated') {
+                        msgDiv.textContent = 'Пароль успешно обновлен!';
+                        document.getElementById('newPassword').value = '';
+                    } else {
+                        msgDiv.textContent = 'Профиль обновлен!';
+                        // Update displayed name without reload if only password changed or mixed (though username change triggers logout)
+                        if (payload.username) {
+                            document.getElementById('profile-username').textContent = payload.username;
+                        }
+                    }
                 } else {
                     const text = await response.text();
                     msgDiv.style.color = 'var(--danger-color)';
