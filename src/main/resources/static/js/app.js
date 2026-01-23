@@ -56,12 +56,30 @@ saveTaskBtn.onclick = updateTask;
 async function fetchTasks() {
     try {
         const response = await fetch(API_URL);
+
+        if (response.status === 401) {
+            window.location.href = '/login.html';
+            return;
+        }
+
         tasks = await response.json();
         renderTasks();
+        checkUser(); // Check user info
     } catch (error) {
         console.error('Error fetching tasks:', error);
         taskList.innerHTML = '<div class="error-message">Ошибка загрузки задач</div>';
     }
+}
+
+async function checkUser() {
+    try {
+        const res = await fetch('/auth/user');
+        if (res.ok) {
+            const data = await res.json();
+            const header = document.querySelector('header p');
+            if (header) header.innerHTML = `Привет, <b>${data.username}</b>! <a href="/logout" style="color: var(--danger-color); margin-left: 10px; text-decoration: none;">Выйти</a>`;
+        }
+    } catch (e) { }
 }
 
 async function createTask() {
