@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Мои Задачи</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-page">
+    <div class="auth-container">
+        <header>
+            <h1>Регистрация</h1>
+            <p>Создайте аккаунт</p>
+        </header>
+
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="primary-btn">Зарегистрироваться</button>
+            <div id="reg-error" class="error-message" style="text-align: center; margin-top: 1rem;"></div>
+            <div id="reg-success" class="success-message"
+                style="text-align: center; margin-top: 1rem; color: var(--success-color);"></div>
+        </form>
+
+        <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="/login.html">Войти</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('reg-error');
+            const successDiv = document.getElementById('reg-success');
+
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    successDiv.textContent = 'Успешно! Перенаправление на вход...';
+                    setTimeout(() => window.location.href = '/login.html', 1500);
+                } else {
+                    const text = await response.text();
+                    errorDiv.textContent = text || 'Ошибка регистрации';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Ошибка сети';
+            }
+        });
+    </script>
+</body>
+
+</html>
