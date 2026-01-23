@@ -3,6 +3,8 @@ package com.example.taskmanager.service;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.TaskStatus;
 import com.example.taskmanager.repository.TaskRepository;
+import com.example.taskmanager.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -10,16 +12,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    private com.example.taskmanager.model.User getCurrentUser() {
+        String username = org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        return taskRepository.findByUser(getCurrentUser());
     }
 
     public Optional<Task> getTaskById(Long id) {
@@ -27,6 +33,7 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        task.setUser(getCurrentUser());
         if (task.getStatus() == null) {
             task.setStatus(TaskStatus.PENDING);
         }
