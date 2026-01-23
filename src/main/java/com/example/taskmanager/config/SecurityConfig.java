@@ -12,27 +12,29 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // Упрощаем для начала
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**", "/auth/**", "/h2-console/**").permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login.html") // Мы создадим эту страницу
-                        .loginProcessingUrl("/login") // Spring Security обработает POST сюда
-                        .defaultSuccessUrl("/", true)
-                        .permitAll())
-                .logout(logout -> logout
-                        .permitAll())
-                .headers(headers -> headers.frameOptions().disable()); // Для H2 консоли
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable()) // Упрощаем для начала
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/css/**", "/js/**", "/auth/**", "/h2-console/**",
+                                                                "/register.html", "/login.html")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/login.html") // Мы создадим эту страницу
+                                                .loginProcessingUrl("/login") // Spring Security обработает POST сюда
+                                                .defaultSuccessUrl("/", true)
+                                                .permitAll())
+                                .logout(logout -> logout
+                                                .permitAll())
+                                .headers(headers -> headers.frameOptions().disable()); // Для H2 консоли
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

@@ -32,4 +32,17 @@ public class AuthController {
         }
         return ResponseEntity.ok(Map.of("username", principal.getName()));
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> payload, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+
+        String newPassword = payload.get("password");
+        if (newPassword != null && !newPassword.isBlank()) {
+            userService.updateUserPassword(principal.getName(), newPassword);
+            return ResponseEntity.ok("Password updated");
+        }
+        return ResponseEntity.badRequest().body("Password required");
+    }
 }

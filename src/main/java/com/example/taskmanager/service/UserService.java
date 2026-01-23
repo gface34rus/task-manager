@@ -34,7 +34,12 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.emptyList() // Роли пока не используем активно
-        );
+                Collections.emptyList());
+    }
+
+    public void updateUserPassword(String username, String newPassword) {
+        User user = findByUsername(username);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

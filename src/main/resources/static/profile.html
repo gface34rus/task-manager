@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль - Мои Задачи</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-page">
+    <div class="auth-container">
+        <header>
+            <h1>Профиль</h1>
+            <p id="profile-username">Загрузка...</p>
+        </header>
+
+        <form id="profileForm" class="auth-form">
+            <div class="form-group">
+                <label for="newPassword">Новый пароль</label>
+                <input type="password" id="newPassword" name="newPassword"
+                    placeholder="Оставьте пустым, если не меняете">
+            </div>
+
+            <button type="submit" class="primary-btn">Сохранить</button>
+            <div id="msg" class="message" style="text-align: center; margin-top: 1rem;"></div>
+        </form>
+
+        <div class="auth-footer">
+            <p><a href="/">← Назад к задачам</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Load user info
+        fetch('/auth/user').then(res => {
+            if (res.ok) return res.json();
+            throw new Error('Not logged in');
+        }).then(data => {
+            document.getElementById('profile-username').textContent = data.username;
+        }).catch(() => {
+            window.location.href = '/login.html';
+        });
+
+        // Handle update
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('newPassword').value;
+            const msgDiv = document.getElementById('msg');
+
+            if (!password) {
+                msgDiv.textContent = 'Введите новый пароль для изменения';
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    msgDiv.style.color = 'var(--success-color)';
+                    msgDiv.textContent = 'Пароль успешно обновлен!';
+                    document.getElementById('newPassword').value = '';
+                } else {
+                    const text = await response.text();
+                    msgDiv.style.color = 'var(--danger-color)';
+                    msgDiv.textContent = text || 'Ошибка обновления';
+                }
+            } catch (err) {
+                msgDiv.style.color = 'var(--danger-color)';
+                msgDiv.textContent = 'Ошибка сети';
+            }
+        });
+    </script>
+</body>
+
+</html>
