@@ -42,4 +42,13 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+    public void updateUsername(String oldUsername, String newUsername) {
+        if (userRepository.findByUsername(newUsername).isPresent()) {
+            throw new RuntimeException("Username already taken");
+        }
+        User user = findByUsername(oldUsername);
+        user.setUsername(newUsername);
+        userRepository.save(user);
+    }
 }

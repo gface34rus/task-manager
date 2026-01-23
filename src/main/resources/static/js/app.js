@@ -77,7 +77,7 @@ async function checkUser() {
         if (res.ok) {
             const data = await res.json();
             const header = document.querySelector('header p');
-            if (header) header.innerHTML = `Привет, <b>${data.username}</b>! <a href="/logout" style="color: var(--danger-color); margin-left: 10px; text-decoration: none;">Выйти</a>`;
+            if (header) header.innerHTML = `Привет, <b><a href="/profile.html" style="color: inherit; text-decoration: underline;">${data.username}</a></b>! <a href="/logout" style="color: var(--danger-color); margin-left: 10px; text-decoration: none;">Выйти</a>`;
         }
     } catch (e) { }
 }
