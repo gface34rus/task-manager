@@ -58,7 +58,7 @@ class TaskServiceTest {
     void getAllTasks_ShouldReturnUserTasks() {
         when(authentication.getName()).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
-        
+
         Task task1 = new Task();
         task1.setTitle("Task 1");
         Task task2 = new Task();
