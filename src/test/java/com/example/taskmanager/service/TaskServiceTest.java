@@ -48,14 +48,14 @@ class TaskServiceTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setUsername("testuser");
-
-        // Mock Security Context
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
     void getAllTasks_ShouldReturnUserTasks() {
+        // Mock Security Context
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         when(authentication.getName()).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
@@ -73,6 +73,10 @@ class TaskServiceTest {
 
     @Test
     void createTask_ShouldSetUserAndDefaultStatus() {
+        // Mock Security Context for this test
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         when(authentication.getName()).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArguments()[0]);

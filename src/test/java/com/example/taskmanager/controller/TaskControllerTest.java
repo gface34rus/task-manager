@@ -77,7 +77,7 @@ class TaskControllerTest {
     void deleteTask_ShouldReturnOk() throws Exception {
         mockMvc.perform(delete("/api/tasks/1")
                 .with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         verify(taskService).deleteTask(1L);
     }
