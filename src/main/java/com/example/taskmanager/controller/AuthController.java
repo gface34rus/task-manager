@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.Map;
 
+/**
+ * REST контроллер для аутентификации и управления профилем пользователя.
+ * Предоставляет API для регистрации и работы с данными пользователя.
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -15,6 +19,12 @@ public class AuthController {
 
     private final UserService userService;
 
+    /**
+     * Регистрирует нового пользователя.
+     *
+     * @param user Данные пользователя (username, password)
+     * @return 200 OK при успехе или 400 Bad Request при ошибке
+     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
@@ -25,6 +35,12 @@ public class AuthController {
         }
     }
 
+    /**
+     * Получает информацию о текущем авторизованном пользователе.
+     *
+     * @param principal Объект Principal (автоматически внедряется Spring Security)
+     * @return Имя пользователя или 401 Unauthorized
+     */
     @GetMapping("/user")
     public ResponseEntity<?> getCurrentUser(Principal principal) {
         if (principal == null) {
@@ -33,6 +49,13 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("username", principal.getName()));
     }
 
+    /**
+     * Обновляет профиль пользователя (имя или пароль).
+     *
+     * @param payload   Map с новыми данными (username, password)
+     * @param principal Текущий пользователь
+     * @return Результат обновления
+     */
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> payload, Principal principal) {
         if (principal == null)
@@ -51,7 +74,7 @@ public class AuthController {
         if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(currentUsername)) {
             try {
                 userService.updateUsername(currentUsername, newUsername);
-                // If username changed, we return specific message to trigger logout
+                // Если имя изменилось, возвращаем сообщение для повторного входа
                 return ResponseEntity.ok("Username updated");
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(e.getMessage());
