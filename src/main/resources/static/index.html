@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/stats.css">
 </head>
 
 <body>
@@ -26,6 +27,30 @@
                 <button id="addTaskBtn"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="error-message" id="titleError"></div>
+        </section>
+
+        <section class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon pending"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>Ожидают</h3>
+                    <p id="statPending">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon progress"><i class="fa-solid fa-spinner"></i></div>
+                <div class="stat-info">
+                    <h3>В процессе</h3>
+                    <p id="statProgress">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon completed"><i class="fa-solid fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Готово</h3>
+                    <p id="statCompleted">0</p>
+                </div>
+            </div>
         </section>
 
         <section class="tasks-container">
