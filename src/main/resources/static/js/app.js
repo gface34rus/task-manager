@@ -246,6 +246,18 @@ function renderTasks() {
             taskList.insertBefore(draggable, afterElement);
         }
     });
+
+    updateStats();
+}
+
+function updateStats() {
+    const pending = tasks.filter(t => t.status === 'PENDING').length;
+    const progress = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+    const completed = tasks.filter(t => t.status === 'COMPLETED').length;
+
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statProgress').textContent = progress;
+    document.getElementById('statCompleted').textContent = completed;
 }
 
 function getDragAfterElement(container, y) {
